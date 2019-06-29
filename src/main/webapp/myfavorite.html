@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>黑马旅游网-我的收藏</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        .tab-content .row > div {
+            margin-top: 16px;
+        }
+
+        .tab-content {
+            margin-bottom: 36px;
+        }
+
+        .pagination1 {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .pagination1 > li {
+            display: inline;
+        }
+
+        .pagination1 > li:first-child > a, .pagination > li:first-child > span {
+            margin-left: 0;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        .pagination1 > li {
+            display: inline;
+        }
+
+        .pagination1 > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover, .pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
+            z-index: 3;
+            color: #fff;
+            cursor: default;
+            background-color: #337ab7;
+            border-color: #337ab7;
+        }
+
+        .pagination1 > li > a, .pagination > li > span {
+            position: relative;
+            float: left;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: #337ab7;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .pagination1 > li:last-child > a, .pagination > li:last-child > span {
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .pagination1 > li > a, .pagination > li > span {
+            position: relative;
+            float: left;
+            padding: 6px 12px;
+            margin-left: -1px;
+            line-height: 1.42857143;
+            color: #337ab7;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+    </style>
+    <script src="js/jquery-3.3.1.js"></script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+<!-- 排行榜 start-->
+<section id="content">
+    <section class="hemai_jx">
+        <div class="jx_top">
+            <div class="jx_tit">
+                <img src="images/icon_5.jpg" alt="">
+                <span>我的收藏</span>
+            </div>
+        </div>
+        <div class="jx_content">
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="home">
+                    <div class="row">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+        <nav aria-label="...">
+            <ul class="pagination1">
+
+            </ul>
+        </nav>
+    </section>
+</section>
+<!-- 排行榜 end-->
+
+<!--引入尾部-->
+<div id="footer"></div>
+<!--导入布局js，共享header和footer-->
+<script type="text/javascript" src="js/include.js"></script>
+<script>
+    // "howPage=1"
+    Favorite = function (pageNum) {
+        $(".pagination1").html("");
+        $(".row").html("");
+        $.post("/travel/favoritd/getFavorites", {howPage: pageNum}, function (res) {
+            if(res.errorMsg!=null){
+                alert(res.errorMsg);
+                location.href="http://localhost/travel/login.html";
+            }
+            var html = '';
+            $.each(res.list, function (i, e) {
+                html += '<div class="col-md-3">\n' +
+                    '                                    <a href="javascript:serchImg(' + e.rid + ');">\n' +
+                    '                                        <img src="' + e.rimage + '" alt="">\n' +
+                    '                                        <div class="has_border">\n' +
+                    '                                            <h3>' + e.rname + '</h3>\n' +
+                    '                                            <div class="price">网付价<em>￥</em><strong>' + e.price + '</strong><em>起</em></div>\n' +
+                    '                                        </div>\n' +
+                    '                                    </a>\n' +
+                    '                                </div>'
+            });
+            $(".row").append(html);
+            $(".pagination1").append('<li><a href="javascript:Favorite(' + res.prePageNum + ');" aria-label="Previous"><span aria-hidden="true">«</span></a></li>');
+            for (var i = res.startPage; i <= res.endPage; i++) {
+                if (i == res.currentPageNum) {
+                    $(".pagination1").append('<li class="active"><a href="javascript:Favorite(' + i + ');" >' + i + '</a></li>');
+                } else {
+                    $(".pagination1").append('<li><a href="javascript:Favorite(' + i + ');">' + i + '</a></li>');
+                }
+            }
+            $(".pagination1").append('<li><a href="javascript:Favorite(' + res.nextPageNum + ');" aria-label="Next"><span aria-hidden="true">»</span></a></li>');
+
+        }, "json");
+    }
+    $(function () {//页面加载完之后执行
+        Favorite(1);
+    })
+</script>
+</body>
+</html>

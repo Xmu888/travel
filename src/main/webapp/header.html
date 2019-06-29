@@ -1,0 +1,159 @@
+<script>
+    $(".search_input").focus();
+    var los = localStorage;
+    $.post("/user/GetSession", "", function (data) {
+        if (data != null) {
+            $("#span").html(data.name);
+            $(".login").css("display", "block");
+            $(".login_out").css("display", "none");
+        } else {
+            $(".login").css("display", "none");
+            $(".login_out").css("display", "block");
+        }
+    }, "json");
+    $.post("/category/GetListForNav", "", function (data) {
+        $(".nav").append('<li class="nav-active"><a href="index.html">首页</a></li>');
+        $.each(data, function (i, e) {
+            console.log(e.cid);
+            $(".nav").append("<li><a href='javascript:;' onclick='fn(" + e.cid + ")'>" + e.cname + "</a></li>")
+        });
+        $(".nav").append('<li><a href="favoriterank.html">收藏排行榜</a></li>');
+    }, "json");
+    function fn(res) {
+        los.removeItem("cid");
+        los.removeItem("serchName");
+        los.removeItem("setPageNum");
+        $(".search_input").val("");
+        los.res = res;
+        if (location.href.indexOf("/travel/route_list.html")==-1) {
+            los.res = res;
+            location.href = "/route_list.html"
+        } else {
+            a(res, 1);
+        }
+    }
+
+    serch = function (pageNum) {
+        los.removeItem("cid");
+        los.removeItem("setPageNum");
+        los.pageNum = pageNum;
+        los.serchName = $(".search_input").val();
+        if (location.href.indexOf("/travel/route_list.html")==-1) {
+            location.href = "/route_list.html";
+        } else {
+            if ($(".search_input").val() != "" && los.serchName != null) {
+                $("#BigUl").html("");
+                $(".pagination").html("");
+                los.removeItem("res");
+                $.post("/Page/GetPageData", {test: los.serchName, pageNum: pageNum}, function (res) {
+                    console.log(res);
+                    // los.arr = data;
+                    $.each(res.list, function (i, data) {
+                        var html = '<li>\n' +
+                            '                            <div class="img"><img src="' + data.rimage + '" alt=""></div>\n' +
+                            '                            <div class="text1">\n' +
+                            '                                <p>' + data.rname + '</p>\n' +
+                            '                                <br>\n' +
+                            '                                <p>' + data.routeIntroduce + '</p>\n' +
+                            '                            </div>\n' +
+                            '                            <div class="price">\n' +
+                            '                                <p class="price_num">\n' +
+                            '                                    <span>¥</span>\n' +
+                            '                                    <span>' + data.price + '</span>\n' +
+                            '                                    <span>起</span>\n' +
+                            '                                </p>\n' +
+                            '                                <p><a href="javascript:serchImg(' + data.rid + "," + data.sid + ');">查看详情</a></p>\n' +
+                            '                            </div>\n' +
+                            '                        </li>';
+                        $("#BigUl").append(html);
+                    });
+                    $(".page_num_inf span:eq(0)").html(res.totalPageNum);
+                    $(".page_num_inf span:eq(1)").html(res.totalRecords);
+                    $(".pagination").append('<li><a href="javascript:serch(' + res.prePageNum + ');" aria-label="Previous"><span aria-hidden="true">«</span></a></li>');
+                    for (var i = res.startPage; i <= res.endPage; i++) {
+                        if (i == res.currentPageNum) {
+                            $(".pagination").append('<li class="active"><a href="javascript:serch(' + i + ');" >' + i + '</a></li>');
+                        } else {
+                            $(".pagination").append('<li><a href="javascript:serch(' + i + ');">' + i + '</a></li>');
+                        }
+                    }
+                    $(".pagination").append('<li><a href="javascript:serch(' + res.nextPageNum + ');" aria-label="Next"><span aria-hidden="true">»</span></a></li>');
+
+                    localStorage.removeItem("arr");//删除该缓存
+                    // location.href="http://localhost/travel/route_list.html";
+                }, "json");
+            }
+        }
+    }
+    if (los.serchName != null && location.href.indexOf("/travel/route_list.html")!= -1) {
+        $(".search_input").val(los.serchName);
+        serch(los.pageNum);//刷新之后自动恢复
+        // document.getElementById('blab_send_button').click();
+    }
+    Loginout = function () {
+        los.removeItem("loginFlag");
+        $.post("/user/LoginOut","",function(res){
+            location.href = "/user/GoOut";
+        });
+    }
+
+
+    $(document).keydown(function (event) {
+        if (event.keyCode == 13) {
+            $(".search-button").click();
+        }
+    });
+    $(".search-button").click(function(){
+        if($(".search_input").val()!=""){
+            serch(1);
+        }
+    });
+</script>
+<!-- 头部 start -->
+<header id="header">
+    <div class="top_banner">
+        <img src="images/top_banner.jpg" alt="">
+    </div>
+    <div class="shortcut">
+        <!-- 未登录状态  -->
+        <div class="login_out">
+            <a href="login.html">登录</a>
+            <a href="register.html">注册</a>
+        </div>
+        <!-- 登录状态  -->
+        <div class="login">
+
+            <span id="span">请登录！</span>
+            <a href="myfavorite.html" class="collection">我的收藏</a>
+            <a href="javascript:Loginout();">退出</a>
+        </div>
+    </div>
+    <div class="header_wrap">
+        <div class="topbar">
+            <div class="logo">
+                <a href="/"><img src="images/logo.jpg" alt=""></a>
+            </div>
+            <div class="search">
+                <input name="" type="text" placeholder="请输入路线名称" class="search_input" autocomplete="off">
+                <a href="javascript:;" id="blab_send_button" class="search-button">搜索</a>
+            </div>
+            <div class="hottel">
+                <div class="hot_pic">
+                    <img src="images/hot_tel.jpg" alt="">
+                </div>
+                <div class="hot_tel">
+                    <p class="hot_time">客服热线(9:00-6:00)</p>
+                    <p class="hot_num">400-618-9090</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+<!-- 头部 end -->
+<!-- 首页导航 -->
+<div class="navitem">
+    <ul class="nav">
+
+    </ul>
+</div>
+<script src="js/load.js"></script>

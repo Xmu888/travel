@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>收藏排行榜</title>
+        <link rel="stylesheet" type="text/css" href="css/common.css">
+        <link rel="stylesheet" type="text/css" href="css/ranking-list.css">
+        <script src="js/jquery-3.3.1.js"></script>
+        <style>
+            .pagination1 {
+                display: inline-block;
+                padding-left: 0;
+                margin: 20px 0;
+                border-radius: 4px;
+            }
+
+            .pagination1 > li {
+                display: inline;
+            }
+
+            .pagination1 > li:first-child > a, .pagination > li:first-child > span {
+                margin-left: 0;
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+            }
+
+            .pagination1 > li {
+                display: inline;
+            }
+
+            .pagination1 > .active > a, .pagination > .active > a:focus, .pagination > .active > a:hover, .pagination > .active > span, .pagination > .active > span:focus, .pagination > .active > span:hover {
+                z-index: 3;
+                color: #fff;
+                cursor: default;
+                background-color: #337ab7;
+                border-color: #337ab7;
+            }
+
+            .pagination1 > li > a, .pagination > li > span {
+                position: relative;
+                float: left;
+                padding: 6px 12px;
+                margin-left: -1px;
+                line-height: 1.42857143;
+                color: #337ab7;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination1 > li:last-child > a, .pagination > li:last-child > span {
+                border-top-right-radius: 4px;
+                border-bottom-right-radius: 4px;
+            }
+
+            .pagination1 > li > a, .pagination > li > span {
+                position: relative;
+                float: left;
+                padding: 6px 12px;
+                margin-left: -1px;
+                line-height: 1.42857143;
+                color: #337ab7;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+        </style>
+    </head>
+    <body>
+    <!--引入头部-->
+    <div id="header"></div>
+        <div class="contant">
+            <div class="shaixuan">
+                <span>线路名称</span>
+                <input type="text" id="xianName">
+                <span>金额</span>
+                <input type="number" id="numOne">~<input type="number" id="numTwo">
+                <button type="button" id="btns">搜索</button>
+            </div>
+            <div class="list clearfix">
+                <ul>
+
+
+                </ul>
+            </div>
+            <nav aria-label="...">
+                <ul class="pagination1">
+
+                </ul>
+            </nav>
+        </div>
+    	
+         <!--导入底部-->
+   		 <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+    <script>
+        $("#btns").click(function(){
+            getAllForPage(1);
+        });
+        getAllForPage = function(pageNum){
+            $(".clearfix ul").html("");
+            $(".pagination1").html("");
+            var str = "howPage="+pageNum;
+            if($("#xianName").val().trim()!=''){
+                str += "&name="+$("#xianName").val().trim();
+            }
+            if($("#numOne").val().trim()!=''&&$("#numTwo").val().trim()!=''){
+                str += "&numOne="+$("#numOne").val().trim()+"&numTwo="+$("#numTwo").val().trim();
+            }
+            $.post("/travel/favoritd/getAllFavorite",str,function(data){
+                console.log(data);
+                $.each(data.list,function(i,e){
+                    //页码-1*条数  + 索引
+                    var num = (data.currentPageNum-1)*data.pageSize+(i+1)
+                    console.log(i);
+                    var html = '';
+                    if(num==1){
+                        html += '<li>\n' +
+                            '                        <span class="num one">'+num+'</span>\n' +
+                            '                        <a href="javascript:serchImg('+e.rid+',1)"><img src="'+e.rimage+'" alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html">'+e.rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">¥<span>'+e.price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">已收藏'+e.count+'次</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>';
+                    }else if(num==2){
+                        html += '<li>\n' +
+                            '                        <span class="num two">'+num+'</span>\n' +
+                            '                        <a href="javascript:serchImg('+e.rid+',1)"><img src="'+e.rimage+'" alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html">'+e.rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">¥<span>'+e.price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">已收藏'+e.count+'次</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>';
+                    }else{
+                        html += '<li>\n' +
+                            '                        <span class="num">'+num+'</span>\n' +
+                            '                        <a href="javascript:serchImg('+e.rid+',1)"><img src="'+e.rimage+'" alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html">'+e.rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">¥<span>'+e.price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">已收藏'+e.count+'次</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>';
+                    }
+                    $(".clearfix ul").append(html);
+                })
+                $(".pagination1").append('<li><a href="javascript:getAllForPage(' + data.prePageNum + ');" aria-label="Previous"><span aria-hidden="true">«</span></a></li>');
+                for (var i = data.startPage; i <= data.endPage; i++) {
+                    if (i == data.currentPageNum) {
+                        $(".pagination1").append('<li class="active"><a href="javascript:getAllForPage(' + i + ');" >' + i + '</a></li>');
+                    } else {
+                        $(".pagination1").append('<li><a href="javascript:getAllForPage(' + i + ');">' + i + '</a></li>');
+                    }
+                }
+                $(".pagination1").append('<li><a href="javascript:getAllForPage(' + data.nextPageNum + ');" aria-label="Next"><span aria-hidden="true">»</span></a></li>');
+
+            },"json");
+        }
+        $(function(){
+            getAllForPage(1);
+        })
+    </script>
+    </body>
+</html>
